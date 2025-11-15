@@ -1,0 +1,51 @@
+# The programs was used to make Figures 1-4 in "Multi-Timescale Systems and Fast-Slow 
+# Analysis", by R. Bertram and J. E. Rubin, Mathematical Biosciences, 287:105-121, 2017.
+# It is a simple relaxation oscillator. 
+
+# Initial conditions
+v(0)=-43.0
+s(0)=0.29
+
+#
+# Model parameters
+params taus=10000,vs=-47.2
+params gs=35,gkatp=13
+
+# canard values: 
+#   vs=-47.2 (small)
+#       -46.8604  (bigger)
+#       -46.86031215575  (biggest)
+#       -46.86031215573 (relaxation)
+
+# To make the fast subsystem bifurcation diagram set autos=0
+params autos=1,sknot=1
+
+# invisible parameters
+number vca=100, vk=-80, cm=4524
+number vm=-22, vn=-9, sm=7.5, sn=10
+number ss=0.5
+number gl=25,vl=-40,gk=1300,gca=280
+
+# assorted functions
+minf = 1.0/(1.0+exp((vm-v)/sm))
+ninf = 1.0/(1.0+exp((vn-v)/sn))
+sinf = 1/(1.0+exp((vs-v)/ss))
+
+# ionic currents
+ica = gca*minf*(v-vca)
+is = gs*s*(v-vk)
+ik = gk*ninf*(v-vk)
+il = gl*(v-vl)
+ikatp = gkatp*(v-vk)
+
+# differential equations
+v' = -(ica+is+il+ik+ikatp)/cm
+s' = autos*((sinf-s)/taus) + (1-autos)*(sknot-s) 
+
+aux tsec=t/1000
+
+# XPP parameters
+@ meth=8, dtmax=1, dt=10, total=50000, maxstor=10000, bell=0
+@ bounds=100000000, xp=tsec,  yp=v, toler=1.0e-9, atoler=1.0e-9
+@ xlo=0, xhi=50, ylo=-70, yhi=-10
+done

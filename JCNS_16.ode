@@ -1,0 +1,147 @@
+# JCNS_16.ode
+
+# This XPPAUT file contains the pituitary lactotroph model described in the paper
+# "From global to local: exploring the relationship between parameters and behaviors in 
+# models of electrical excitability", P. Fletcher, R. Bertram, J. Tabak, Journal of
+# Computational Neuroscience, 40:331-345, 2016.
+
+# The main K+ conductances
+p gir=0.000
+p ga=0.000
+p gbk=0.000
+
+# Below are the mean parameter sets for model subpopulations of interest. Uncomment one at a time.
+
+# Hyperpolarized models
+
+# mean of hyperpolarized models
+#p gcal=1.6320, gk=3.4653, gsk=2.3863, gl=0.2192, kc=0.0757
+
+# mean of hyperpolarized models converted to spiking by IKir
+#p gcal=1.3837, gk=3.6800, gsk=2.3433, gl=0.2271, kc=0.0899
+
+# mean of hyperpolarized models NOT activated by IKir ("depolarized" portion of those remaining 
+# hyperpolarized)
+#p gcal=0.6076, gk=4.0528, gsk=1.7672, gl=0.2404, kc=0.1477
+
+# mean of hyperpolarized models NOT activated by IKir ("hyperpolarized" portion of those remaining 
+# hyperpolarized)
+#p gcal=2.1425, gk=3.3588, gsk=2.6127, gl=0.2075, kc=0.0483
+
+# mean of hyperpolarized models converted to spiking by IA
+#p gcal=0.9075, gk=3.5419, gsk=2.2511, gl=0.2303, kc=0.1204
+
+
+
+# Spiking models
+
+# default: center of the sampled parameter values is a spiker 
+p gcal=2.000, gk=3.200, gsk=2.000, gl=0.200, kc=0.1200
+
+# mean of spikers
+#p gcal=1.8693, gk=3.6863, gsk=2.0584, gl=0.1963, kc=0.1392
+
+# mean of spikers that become bursters due to IKir
+#p gcal=2.0899, gk=3.2534, gsk=2.0361, gl=0.1994, kc=0.1415
+
+# mean of spikers that become bursters due to IA
+#p gcal=1.8520, gk=3.7115, gsk=1.7401, gl=0.1910, kc=0.1436
+
+# mean of spikers that become bursters due to IBK
+#p gcal=2.0351, gk=3.6155, gsk=2.1895, gl=0.1927, kc=0.1392
+
+
+
+# Bursting models
+
+# mean of bursters
+#p gcal=2.3822, gk=2.4850, gsk=1.6924, gl=0.1780, kc=0.1403
+
+# mean of bursters that become one-spike bursters due to IKir
+#p gcal=2.5073, gk=2.3436, gsk=2.0736, gl=0.1803, kc=0.1407
+
+# mean of bursters that become one-spike bursters due to IA
+#p gcal=2.2840, gk=2.2138, gsk=1.9279, gl=0.1797, kc=0.1421
+
+# mean of bursters that become depolarized due to IBK
+#p gcal=2.1926, gk=2.5712, gsk=1.2973, gl=0.1906, kc=0.1560
+
+
+
+# One-spike bursting models
+
+# mean of one-spike bursters
+#p gcal=2.5052, gk=1.3764, gsk=2.5216, gl=0.1811, kc=0.1423
+
+# mean of one-spike bursters that become bursters due to IBK
+#p gcal=2.5532, gk=1.3800, gsk=2.5092, gl=0.1812, kc=0.1446
+
+
+
+# Depolarized models
+
+# mean of depolarized
+#p gcal=2.7066, gk=2.4030, gsk=0.9440, gl=0.1945, kc=0.1269
+
+
+
+# The rest of the parameters
+n Cm=10.000
+n ff=0.01000
+
+n taun=30.000
+n tauh=20.000
+n taubk=5.000
+n ks=0.4
+
+n vl=-50.000
+n vca=60,vk=-75
+
+n vm=-20, sm=12
+n vn=-5, sn=10
+n va=-20, sa=10
+n vh=-60, sh=-5
+n vb=-20, sb=2
+n vir=-60, sir=-5
+
+n alpha=0.0015
+
+
+vkDrive=v-vk
+
+minf=1/(1+exp((vm-v)/sm))
+ninf=1/(1+exp((vn-v)/sn))
+ainf=1/(1+exp((va-v)/sa))
+hinf=1/(1+exp((vh-v)/sh))
+binf=1/(1+exp((vb-v)/sb))
+kirinf = 1/(1+exp((vir-v)/sir))
+
+cc=c*c
+cinf=cc/(cc+ks*ks)
+
+ica=gcal*minf*(v-vca)
+ikdr=gk*n*vkDrive
+isk=gsk*cinf*vkDrive
+ia=ga*ainf*h*vkDrive
+ibk=gbk*b*vkDrive
+ikir = gir*kirinf*vkDrive
+ileak=gl*(v-vl)
+
+ik = isk + ibk + ikdr + ia + ikir
+
+v'= -(ica+ik+ileak)/Cm
+n'= (ninf-n)/taun
+h'= (hinf-h)/tauh
+c'= -ff*(alpha*ica+kc*c)
+b'= (binf-b)/taubk
+
+init v=-60.00, n=0.100, h=0.100, c=0.100, b=0.100
+
+aux ical=ica
+
+@ dt=.5, total=5000, method=runge
+@ maxstor=200000, bounds=10000000, xp=t, yp=v
+@ xlo=0, xhi=5000, ylo=-90, yhi=30, bell=0
+@ ntst=150,nmax=500,npr=500,ds=0.01,parmin=-1
+@ autoxmin=0, autoxmax=1,autoymin=-75,autoymax=25
+done

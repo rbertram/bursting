@@ -1,0 +1,68 @@
+# Lactotroph.ode
+
+# This XPPAUT file contains the program for the activity of a 
+# pituitary lactotroph as described in the paper "A Geometric Understanding of how
+# Fast Activating Potassium Channels Promote Bursting in Pituitary Cells", T. Vo, J. Tabak,
+# R. Bertram, M. Wechselberger, J. Comput. Neurosci., 36:259-278, 2014.
+
+# Variables:
+#    v -- membrane potential
+#    b -- BK current activation
+#    n -- delayed rectifier K current activation
+#    c -- calcium concentration
+
+# Initial conditions
+v(0)=-56
+b(0)=0
+n(0)=0 
+c(0)=0.27
+
+# Maximal conductances
+par gbk=0.5, gl=0.2, gk=1.5, gca=2, gsk=2
+
+# Nernst potentials
+num vk=-75, vl=-50, vca=60 
+
+# time constants
+par taubk=5.8
+num taun=30
+
+# EC50 values and slopes
+num vn=-5, vb=-20, vm=-20, sn=10, sb=2, sm=12
+
+# Ca concentration parameters
+num kc=0.12, fc=0.01, alpha=0.0015 
+
+# Other parameters
+par Cm=5 
+num ks=0.4
+ 
+# Equilibrium functions
+ninf=1/(1+exp((vn-v)/sn))
+binf=1/(1+exp((vb-v)/sb))
+minf=1/(1+exp((vm-v)/sm))
+sinf=c^2/(c^2+ks^2)
+
+# Ionic currents
+ica=gca*minf*(v-vca)
+isk=gsk*sinf*(v-vk)
+ibk=gbk*b*(v-vk)
+ik=gk*n*(v-vk)
+il=gl*(v-vl)
+
+# Differential equations
+v'= -(ica+ibk + ik + isk + il)/Cm
+b'= (binf-b)/taubk
+n'= (ninf-n)/taun
+c'= -fc*(alpha*ica+kc*c)
+
+aux sinf=sinf
+aux gbk=gbk
+aux gk=gk
+aux  tsec = t/1000
+
+@ dt=0.1, total=6000, maxstor=200000
+@ bounds=1000000000, xp=t, yp=v
+@ xlo=0, xhi=3000, ylo=-85, yhi=10, bell=off
+@ Ntst=70, Nmax=1000, Npr=1500, parmin=-1, parmax=200,Dsmax=0.2
+done
